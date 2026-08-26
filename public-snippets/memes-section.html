@@ -1,0 +1,59 @@
+<!--
+  MEME GALLERY SECTION
+  Paste this into index.html, right before the <section class="community" id="community"> section
+  (or anywhere else in <main> — just keep it inside <main>).
+  It matches the site's existing CSS variables (--pink, --green-deep, --cream, --paper, --radius, --ease)
+  so no extra design work is needed. The CSS block goes in the <style> tag; see memes-section.css.
+-->
+<section class="memes" id="memes">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Community Memes</span>
+      <h2 style="color:var(--green-ink);">The pond's meme gallery</h2>
+      <p style="color:rgba(10,20,16,.65);">Drop your best $UNIFROG memes below. Everything here was uploaded by the community — hop in and see what other frogs made.</p>
+    </div>
+
+    <!-- Upload form -->
+    <form id="memeUploadForm" class="meme-upload-card reveal" novalidate>
+      <div class="meme-upload-grid">
+        <label class="meme-drop" id="memeDropZone" for="memeFileInput">
+          <input type="file" id="memeFileInput" name="image" accept="image/png,image/jpeg,image/gif,image/webp" hidden required>
+          <div class="meme-drop-inner" id="memeDropInner">
+            <span class="meme-drop-icon">🖼️</span>
+            <span class="meme-drop-text">Click to choose an image<br><small>PNG, JPG, GIF or WEBP · max 5MB</small></span>
+          </div>
+          <img id="memePreviewImg" class="meme-preview-img" alt="" hidden>
+        </label>
+
+        <div class="meme-upload-fields">
+          <input type="text" id="memeUploaderInput" name="uploader" maxlength="40" placeholder="Your frog name (optional)">
+          <textarea id="memeCaptionInput" name="caption" maxlength="280" rows="3" placeholder="Caption (optional)"></textarea>
+          <!-- Honeypot field — hidden from real users, bots often fill it in -->
+          <input type="text" name="website" autocomplete="off" tabindex="-1" class="meme-honeypot" aria-hidden="true">
+          <button type="submit" class="btn btn-primary" id="memeSubmitBtn">🐸 Post to the Pond</button>
+          <p class="meme-upload-status" id="memeUploadStatus" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+    </form>
+
+    <!-- Gallery controls -->
+    <div class="meme-gallery-controls reveal">
+      <div class="meme-sort-tabs" role="tablist" aria-label="Sort memes">
+        <button type="button" class="meme-sort-tab active" data-sort="new">Newest</button>
+        <button type="button" class="meme-sort-tab" data-sort="top">Top Liked</button>
+      </div>
+    </div>
+
+    <!-- Gallery grid -->
+    <div class="meme-grid reveal" id="memeGrid" aria-live="polite"></div>
+    <p class="meme-empty" id="memeEmpty" hidden>No memes yet — be the first to hop in!</p>
+    <p class="meme-error" id="memeError" hidden></p>
+
+    <div class="meme-load-more-wrap">
+      <button type="button" class="btn btn-ghost" id="memeLoadMoreBtn" hidden>Load more memes</button>
+    </div>
+  </div>
+</section>
+
+<!-- Load the gallery logic at the end of body, right before </body> -->
+<!-- <script src="assets/meme-gallery.js"></script> -->
