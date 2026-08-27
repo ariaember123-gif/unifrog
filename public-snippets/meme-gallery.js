@@ -14,11 +14,14 @@
   const form = document.getElementById('memeUploadForm');
   const fileInput = document.getElementById('memeFileInput');
   const dropInner = document.getElementById('memeDropInner');
-  const previewImg = document.getElementById('memePreviewImg');
+  const previewGrid = document.getElementById('memePreviewGrid');
+  const previewCount = document.getElementById('memePreviewCount');
   const uploaderInput = document.getElementById('memeUploaderInput');
   const captionInput = document.getElementById('memeCaptionInput');
   const submitBtn = document.getElementById('memeSubmitBtn');
   const statusEl = document.getElementById('memeUploadStatus');
+
+  const MAX_FILES = 10;
 
   let state = { sort: 'new', page: 1, pageSize: 24, loading: false, hasMore: false };
   const likedIds = new Set(JSON.parse(localStorage.getItem('unifrog_liked_memes') || '[]'));
@@ -143,16 +146,48 @@
   });
 
   // ---- Upload form ----
+  function resetPreview() {
+    previewGrid.innerHTML = '';
+    previewGrid.hidden = true;
+    previewCount.hidden = true;
+    previewCount.textContent = '';
+    dropInner.hidden = false;
+  }
+
   fileInput.addEventListener('change', () => {
-    const file = fileInput.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      previewImg.src = reader.result;
-      previewImg.hidden = false;
-      dropInner.hidden = true;
-    };
-    reader.readAsDataURL(file);
+    const files = Array.from(fileInput.files || []);
+
+    if (files.length === 0) {
+      resetPreview();
+      return;
+    }
+    if (files.length > MAX_FILES) {
+      statusEl.textContent = `You can select up to ${MAX_FILES} images at once.`;
+      statusEl.className = 'meme-upload-status err';
+      fileInput.value = '';
+      resetPreview();
+      return;
+    }
+
+    statusEl.textContent = '';
+    statusEl.className = 'meme-upload-status';
+
+    previewGrid.innerHTML = '';
+    dropInner.hidden = true;
+    previewGrid.hidden = false;
+    previewCount.hidden = false;
+    previewCount.textContent = `${files.length} image${files.length > 1 ? 's' : ''} selected`;
+
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = document.createElement('img');
+        img.src = reader.result;
+        img.alt = '';
+        previewGrid.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    });
   });
 
   form.addEventListener('submit', async (e) => {
@@ -160,35 +195,48 @@
     statusEl.textContent = '';
     statusEl.className = 'meme-upload-status';
 
-    if (!fileInput.files[0]) {
-      statusEl.textContent = 'Choose an image first.';
+    const files = Array.from(fileInput.files || []);
+
+    if (files.length === 0) {
+      statusEl.textContent = 'Choose at least one image first.';
+      statusEl.classList.add('err');
+      return;
+    }
+    if (files.length > MAX_FILES) {
+      statusEl.textContent = `You can upload up to ${MAX_FILES} images at once.`;
       statusEl.classList.add('err');
       return;
     }
 
     const fd = new FormData();
-    fd.append('image', fileInput.files[0]);
+    files.forEach((file) => fd.append('image', file));
     fd.append('uploader', uploaderInput.value);
     fd.append('caption', captionInput.value);
     fd.append('website', form.website.value); // honeypot
 
+    const count = files.length;
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Posting…';
+    submitBtn.textContent = count > 1 ? `Posting ${count} memes…` : 'Posting…';
 
     try {
       const res = await fetch(`${API_BASE}/api/memes-upload`, { method: 'POST', body: fd });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Upload failed.');
 
-      statusEl.textContent = 'Posted! Your meme is live in the pond. 🐸';
+      const memes = data.memes || (data.meme ? [data.meme] : []);
+      statusEl.textContent = memes.length > 1
+        ? `Posted ${memes.length} memes! They're live in the pond. 🐸`
+        : 'Posted! Your meme is live in the pond. 🐸';
       statusEl.classList.add('ok');
       form.reset();
-      previewImg.hidden = true;
-      dropInner.hidden = false;
+      resetPreview();
 
-      // Show it immediately at the top of the feed.
+      // Show them immediately at the top of the feed (last-uploaded ends up on top,
+      // matching the "Newest" sort order).
       if (state.sort === 'new') {
-        grid.insertAdjacentHTML('afterbegin', memeCardHtml(data.meme));
+        memes.forEach((meme) => {
+          grid.insertAdjacentHTML('afterbegin', memeCardHtml(meme));
+        });
         emptyMsg.hidden = true;
       }
     } catch (err) {

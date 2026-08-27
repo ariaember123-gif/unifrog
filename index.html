@@ -131,7 +131,17 @@
 .meme-drop-icon{font-size:32px;}
 .meme-drop-text{font-size:13.5px; color:rgba(10,20,16,.6); font-weight:600; line-height:1.5;}
 .meme-drop-text small{font-weight:500; color:rgba(10,20,16,.4);}
-.meme-preview-img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
+.meme-preview-grid{
+  position:absolute; inset:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(64px,1fr));
+  gap:6px; padding:10px; overflow-y:auto; background:var(--cream);
+}
+.meme-preview-grid img{width:100%; height:64px; object-fit:cover; border-radius:8px; display:block;}
+.meme-preview-count{
+  position:absolute; bottom:10px; right:10px; z-index:1;
+  background:rgba(10,20,16,.75); color:var(--cream);
+  font-family:'JetBrains Mono'; font-size:11px; font-weight:700; letter-spacing:.03em;
+  padding:5px 11px; border-radius:100px;
+}
 
 .meme-upload-fields{display:flex; flex-direction:column; gap:12px;}
 .meme-upload-fields input[type="text"],
@@ -803,11 +813,32 @@
   .launch-card h3{font-size:22px; margin-bottom:12px;}
   .launch-card p{font-size:15px; line-height:1.65; color:rgba(10,20,16,.65); margin-bottom:22px;}
   .launch-card a.btn{padding:12px 22px; font-size:14px;}
+  .lc-cta-row{display:flex; flex-wrap:wrap; gap:12px;}
   .launch-first-badge{
     position:absolute; top:22px; right:22px;
     background:var(--green-ink); color:var(--pink-hot);
     font-family:'JetBrains Mono'; font-size:10.5px; font-weight:700; letter-spacing:.06em;
     padding:6px 12px; border-radius:100px; text-transform:uppercase;
+  }
+
+  /* ---------- LAUNCHPAD / UNISWAP — mobile fixes ----------
+     These rules must stay AFTER the base .launch-grid/.launch-card rules
+     above so they actually win the cascade on small screens (an earlier
+     media query higher up in this stylesheet was being overridden by
+     these unconditional rules — that's what caused the two cards to
+     stay side-by-side and their buttons to overlap on phones). */
+  @media (max-width:980px){
+    .launch-grid{grid-template-columns:1fr; gap:20px;}
+  }
+  @media (max-width:560px){
+    .launch-card{padding:26px 20px;}
+    .launch-card h3{font-size:19px;}
+    .launch-card p{font-size:14px; margin-bottom:18px;}
+    .launch-first-badge{
+      position:static; display:inline-block; margin-bottom:14px; top:auto; right:auto;
+    }
+    .lc-cta-row{flex-direction:column; align-items:stretch;}
+    .launch-card a.btn{width:100%; text-align:center; white-space:normal;}
   }
 
   /* ---------- FAQ ---------- */
@@ -1068,7 +1099,7 @@
           </div>
           <h3>Trade directly on Uniswap</h3>
           <p>No custom router, no extra hoops — $UNIFROG liquidity lives right on Uniswap, so you can swap in seconds with a wallet you already trust.</p>
-          <div style="display:flex; flex-wrap:wrap; gap:12px;">
+          <div class="lc-cta-row">
             <a href="https://app.uniswap.org/explore/tokens/robinhood/0x8750dA3e48345Ec0C5AAAACfcda2A004Da3B60c2" class="btn btn-ghost">Trade on Uniswap</a>
             <a href="https://dexscreener.com/robinhood/0xaa440abaa5d4517181a783a76ef2d4e1466e454422cbada099c107720b01d13f" target="_blank" rel="noopener noreferrer" class="btn btn-primary">View Chart</a>
           </div>
@@ -1164,17 +1195,18 @@
     <form id="memeUploadForm" class="meme-upload-card reveal" novalidate>
       <div class="meme-upload-grid">
         <label class="meme-drop" id="memeDropZone" for="memeFileInput">
-          <input type="file" id="memeFileInput" name="image" accept="image/png,image/jpeg,image/gif,image/webp" hidden required>
+          <input type="file" id="memeFileInput" name="image" accept="image/png,image/jpeg,image/gif,image/webp" hidden required multiple>
           <div class="meme-drop-inner" id="memeDropInner">
             <span class="meme-drop-icon">🖼️</span>
-            <span class="meme-drop-text">Click to choose an image<br><small>PNG, JPG, GIF or WEBP · max 5MB</small></span>
+            <span class="meme-drop-text">Click to choose images<br><small>PNG, JPG, GIF or WEBP · max 5MB each · up to 10 at once</small></span>
           </div>
-          <img id="memePreviewImg" class="meme-preview-img" alt="" hidden>
+          <div id="memePreviewGrid" class="meme-preview-grid" hidden></div>
+          <span id="memePreviewCount" class="meme-preview-count" hidden></span>
         </label>
 
         <div class="meme-upload-fields">
           <input type="text" id="memeUploaderInput" name="uploader" maxlength="40" placeholder="Your frog name (optional)">
-          <textarea id="memeCaptionInput" name="caption" maxlength="280" rows="3" placeholder="Caption (optional)"></textarea>
+          <textarea id="memeCaptionInput" name="caption" maxlength="280" rows="3" placeholder="Caption (optional — applies to all images in this batch)"></textarea>
           <!-- Honeypot field — hidden from real users, bots often fill it in -->
           <input type="text" name="website" autocomplete="off" tabindex="-1" class="meme-honeypot" aria-hidden="true">
           <button type="submit" class="btn btn-primary" id="memeSubmitBtn">🐸 Post to the Pond</button>

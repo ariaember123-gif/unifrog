@@ -17,17 +17,18 @@
     <form id="memeUploadForm" class="meme-upload-card reveal" novalidate>
       <div class="meme-upload-grid">
         <label class="meme-drop" id="memeDropZone" for="memeFileInput">
-          <input type="file" id="memeFileInput" name="image" accept="image/png,image/jpeg,image/gif,image/webp" hidden required>
+          <input type="file" id="memeFileInput" name="image" accept="image/png,image/jpeg,image/gif,image/webp" hidden required multiple>
           <div class="meme-drop-inner" id="memeDropInner">
             <span class="meme-drop-icon">🖼️</span>
-            <span class="meme-drop-text">Click to choose an image<br><small>PNG, JPG, GIF or WEBP · max 5MB</small></span>
+            <span class="meme-drop-text">Click to choose images<br><small>PNG, JPG, GIF or WEBP · max 5MB each · up to 10 at once</small></span>
           </div>
-          <img id="memePreviewImg" class="meme-preview-img" alt="" hidden>
+          <div id="memePreviewGrid" class="meme-preview-grid" hidden></div>
+          <span id="memePreviewCount" class="meme-preview-count" hidden></span>
         </label>
 
         <div class="meme-upload-fields">
           <input type="text" id="memeUploaderInput" name="uploader" maxlength="40" placeholder="Your frog name (optional)">
-          <textarea id="memeCaptionInput" name="caption" maxlength="280" rows="3" placeholder="Caption (optional)"></textarea>
+          <textarea id="memeCaptionInput" name="caption" maxlength="280" rows="3" placeholder="Caption (optional — applies to all images in this batch)"></textarea>
           <!-- Honeypot field — hidden from real users, bots often fill it in -->
           <input type="text" name="website" autocomplete="off" tabindex="-1" class="meme-honeypot" aria-hidden="true">
           <button type="submit" class="btn btn-primary" id="memeSubmitBtn">🐸 Post to the Pond</button>
